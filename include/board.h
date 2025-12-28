@@ -5,6 +5,8 @@
 #define BOARD_RANKS 8
 #define BOARD_FILES 8
 
+#include "move.h"
+
 typedef enum {
     PIECE_NONE = 0,
     PAWN = 1,
@@ -34,5 +36,8 @@ int Board_PieceType(int value);
 int Board_PieceColor(int value);
 
 void Board_DebugPrint(const Board *board);
+
+void Board_DoMove(Board *board, Move *move);
+void Board_UndoMove(Board *board, const Move *move);
 
 #endif
