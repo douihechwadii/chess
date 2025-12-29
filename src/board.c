@@ -161,10 +161,10 @@ void Board_DoMove(Board *board, Move *move)
     int movingPiece = board->squares[move->from];
     int targetPiece = board->squares[move->to];
 
-    /* Save captured piece for undo */
+    // Save captured piece for undo 
     move->captured = targetPiece;
 
-    /* En passant capture */
+    // En passant capture 
     if (move->flags & MOVE_EN_PASSANT)
     {
         int dir = (movingPiece > 0) ? 1 : -1;
@@ -174,7 +174,7 @@ void Board_DoMove(Board *board, Move *move)
         board->squares[capturedIndex] = PIECE_NONE;
     }
 
-    /* Castling */
+    // Castling 
     if (move->flags & MOVE_CASTLING)
     {
         // King moves normally
@@ -200,14 +200,11 @@ void Board_DoMove(Board *board, Move *move)
         return;
     }
 
-    /* =======================
-       Normal move
-       ======================= */
-
+    // Normal move
     board->squares[move->to] = movingPiece;
     board->squares[move->from] = PIECE_NONE;
 
-    /* Promotion */
+    // Promotion 
     if (move->flags & MOVE_PROMOTION)
     {
         int color = (movingPiece > 0) ? 1 : -1;
@@ -219,14 +216,14 @@ void Board_UndoMove(Board *board, const Move *move)
 {
     int piece = board->squares[move->to];
 
-    /* Undo promotion */
+    // Undo promotion 
     if (move->flags & MOVE_PROMOTION)
     {
         int color = (piece > 0) ? 1 : -1;
         piece = color * PAWN;
     }
 
-    /* Castling */
+    // Castling 
     if (move->flags & MOVE_CASTLING)
     {
         board->squares[move->from] = piece;
@@ -250,11 +247,11 @@ void Board_UndoMove(Board *board, const Move *move)
         return;
     }
 
-    /* Normal undo */
+    // Normal undo 
     board->squares[move->from] = piece;
     board->squares[move->to] = move->captured;
 
-    /* En passant restore */
+    // En passant restore 
     if (move->flags & MOVE_EN_PASSANT)
     {
         int dir = (piece > 0) ? 1 : -1;

@@ -29,7 +29,6 @@ void MoveGen_GenerateQueenMoves(const Board *board, MoveList *list, int square, 
 void MoveGen_GenerateKingMoves(const Board *board, MoveList *list, int square, int color, int castlingRights);
 void MoveGen_GeneratePawnMoves(const Board *board, MoveList *list, int square, int color, int enPassantSquare);
 
-// MODIFIED: Added enPassantSquare and castlingRights parameters
 void MoveGen_GeneratePieceMoves(const Board *board, MoveList *list, int square, int color, int enPassantSquare, int castlingRights);
 void MoveGen_GenerateAllMoves(const Board *board, MoveList *list, int color, int enPassantSquare, int castlingRights);
 

@@ -22,9 +22,7 @@ int main(void)
     
     printf("Chess Game Started!\n");
     printf("Controls:\n");
-    printf("  - Click and drag pieces to move\n");
-    printf("  - Or click a piece, then click destination\n");
-    printf("  - Press F to flip the board\n");
+    printf("  - Click a piece, then click destination\n");
     printf("  - Close window to exit\n\n");
     
     // Main game loop 
