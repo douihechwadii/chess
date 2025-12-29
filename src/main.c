@@ -1,61 +1,84 @@
 #include <stdio.h>
+#include "raylib.h"
 #include "board.h"
 #include "movegen.h"
+#include "gamestate.h"
+#include "ui.h"
 
 int main(void)
 {
-    Board board;
-    MoveList moveList;
-
-    InitFromFEN(&board, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
-    Board_DebugPrint(&board);
-
-    printf("\nChecking each square for white pieces:\n");
-    for (int square = 0; square < BOARD_SIZE; square++)
+    /* Initialize window */
+    InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Chess Game");
+    SetTargetFPS(60);
+    
+    /* Initialize game state */
+    GameState state;
+    GameState_Init(&state);
+    
+    /* Initialize UI */
+    UIState ui;
+    UI_Init(&ui);
+    UI_Update(&ui, &state);
+    
+    printf("Chess Game Started!\n");
+    printf("Controls:\n");
+    printf("  - Click and drag pieces to move\n");
+    printf("  - Or click a piece, then click destination\n");
+    printf("  - Press F to flip the board\n");
+    printf("  - Close window to exit\n\n");
+    
+    /* Main game loop */
+    while (!WindowShouldClose())
     {
-        int piece = Board_GetPiece(&board, square);
-        if (piece != PIECE_NONE)
+        /* Handle input */
+        bool moveMade = UI_HandleInput(&ui, &state);
+        
+        if (moveMade)
         {
-            int color = Board_PieceColor(piece);
-            int type = Board_PieceType(piece);
-            
+            printf("Move made: ");
             char files[] = "abcdefgh";
-            int rank = Board_Rank(square);
-            int file = Board_File(square);
+            printf("%c%d -> %c%d\n",
+                   files[Board_File(ui.lastMove.from)],
+                   8 - Board_Rank(ui.lastMove.from),
+                   files[Board_File(ui.lastMove.to)],
+                   8 - Board_Rank(ui.lastMove.to));
             
-            const char* typeNames[] = {"None", "Pawn", "Rook", "Knight", "Bishop", "Queen", "King"};
-            const char* colorNames[] = {"Black", "Neutral", "White"};
-            
-            printf("Square %c%d (index %d): %s %s (value=%d, color=%d)\n",
-                   files[file], 8 - rank, square,
-                   colorNames[color + 1], typeNames[type], piece, color);
-            
-            if (color == 1 && type == PAWN)
+            if (state.result != GAME_ONGOING)
             {
-                int direction = -1;
-                int targetRank = rank + direction;
-                int targetSquare = Board_Index(targetRank, file);
-                int targetPiece = Board_GetPiece(&board, targetSquare);
-                
-                printf("  -> Target square in front: %c%d (index %d), piece value: %d\n",
-                       files[file], 8 - targetRank, targetSquare, targetPiece);
-                
-                MoveList_Init(&moveList);
-                MoveGen_GeneratePieceMoves(&board, &moveList, square, 1);
-                printf("  -> Generated %d moves\n", moveList.count);
-            }
-            else if (color == 1)
-            {
-                MoveList_Init(&moveList);
-                MoveGen_GeneratePieceMoves(&board, &moveList, square, 1);
-                printf("  -> Generated %d moves\n", moveList.count);
+                const char *resultStr[] = {
+                    "",
+                    "White wins by checkmate!",
+                    "Black wins by checkmate!",
+                    "Draw by stalemate",
+                    "Draw by fifty-move rule",
+                    "Draw by threefold repetition",
+                    "Draw by insufficient material"
+                };
+                printf("\nGame Over: %s\n\n", resultStr[state.result]);
             }
         }
+        
+        /* Draw everything */
+        BeginDrawing();
+        ClearBackground(RAYWHITE);
+        
+        UI_DrawBoard(&ui, ui.flipBoard);
+        UI_DrawHighlights(&ui, &state);
+        UI_DrawPieces(&ui, &state);
+        UI_DrawCoordinates(&ui, ui.flipBoard);
+        UI_DrawGameInfo(&ui, &state);
+        
+        /* Draw instructions */
+        DrawText("Press F to flip board", 10, 10, 15, DARKGRAY);
+        
+        EndDrawing();
     }
-
-    printf("\n=== Generating all white moves ===\n");
-    MoveGen_GenerateAllMoves(&board, &moveList, 1);
-    printf("Total moves: %d\n\n", moveList.count);
-
+    
+    /* Cleanup */
+    UI_Cleanup(&ui);
+    CloseWindow();
+    
+    printf("Chess Game Closed.\n");
+    
     return 0;
 }
