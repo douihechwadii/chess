@@ -22,4 +22,9 @@ int MoveGen_IsValidSquare(int rank, int file);
 
 void MoveGen_AddSlidingMoves(const Board *board, MoveList *list, int square, int color, int rankDir, int fileDir);
 
+void MoveGen_GenerateKnightMoves(const Board *board, MoveList *list, int square, int color);
+void MoveGen_GenerateBishopMoves(const Board *board, MoveList *list, int square, int color);
+void MoveGen_GenerateRookMoves(const Board *board, MoveList *list, int square, int color);
+void MoveGen_GenerateQueenMoves(const Board *board, MoveList *list, int square, int color);
+
 #endif

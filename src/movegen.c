@@ -58,3 +58,60 @@ void MoveGen_AddSlidingMoves(const Board *board, MoveList *list, int square, int
         }
     }
 }
+
+void MoveGen_GenerateKnightMoves(const Board *board, MoveList *list, int square, int color)
+{
+    int rank = Board_Rank(square);
+    int file = Board_File(square);
+    
+    int knightMoves[8][2] = {
+        {-2, -1}, {-2, 1}, {-1, -2}, {-1, 2},
+        {1, -2}, {1, 2}, {2, -1}, {2, 1}
+    };
+
+    for (int i = 0; i < 8; i++)
+    {
+        int newRank = rank + knightMoves[i][0];
+        int newFile = file + knightMoves[i][1];
+
+        if (MoveGen_IsValidSquare(newRank, newFile))
+        {
+            int targetSquare = Board_Index(newRank, newFile);
+            int targetPiece = Board_GetPiece(board, targetSquare);
+
+            if (targetPiece == PIECE_NONE)
+            {
+                MoveList_Add(list, square, targetSquare, MOVE_NONE, PIECE_NONE);
+            }
+            else if (Board_PieceColor(targetPiece) != color)
+            {
+                MoveList_Add(list, square, targetSquare, MOVE_CAPTURE, PIECE_NONE);
+            }
+            
+        }
+        
+    }
+    
+}
+
+void MoveGen_GenerateBishopMoves(const Board *board, MoveList *list, int square, int color)
+{
+    MoveGen_AddSlidingMoves(board, list, square, color, -1, -1);
+    MoveGen_AddSlidingMoves(board, list, square, color, -1, 1);
+    MoveGen_AddSlidingMoves(board, list, square, color, 1, -1);
+    MoveGen_AddSlidingMoves(board, list, square, color, 1, 1);
+}
+
+void MoveGen_GenerateRookMoves(const Board *board, MoveList *list, int square, int color)
+{
+    MoveGen_AddSlidingMoves(board, list, square, color, -1, 0);
+    MoveGen_AddSlidingMoves(board, list, square, color, 1, 0);
+    MoveGen_AddSlidingMoves(board, list, square, color, 0, -1);
+    MoveGen_AddSlidingMoves(board, list, square, color, 0, 1);
+}
+
+void MoveGen_GenerateQueenMoves(const Board *board, MoveList *list, int square, int color)
+{
+    MoveGen_GenerateBishopMoves(board, list, square, color);
+    MoveGen_GenerateRookMoves(board, list, square, color);
+}
