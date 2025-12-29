@@ -1,0 +1,29 @@
+# --- Build output ---
+builds/
+*.exe
+*.dll
+*.out
+*.obj
+*.o
+
+# --- Raylib / compiler temporary files ---
+*.log
+*.pdb
+*.ilk
+
+# --- Backup / temporary files ---
+*~
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Windows
+Thumbs.db
+desktop.ini
+
