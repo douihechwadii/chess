@@ -62,14 +62,11 @@ int main(void)
         BeginDrawing();
         ClearBackground(RAYWHITE);
         
-        UI_DrawBoard(&ui, ui.flipBoard);
+        UI_DrawBoard(&ui);
         UI_DrawHighlights(&ui, &state);
         UI_DrawPieces(&ui, &state);
-        UI_DrawCoordinates(&ui, ui.flipBoard);
+        UI_DrawCoordinates(&ui);
         UI_DrawGameInfo(&ui, &state);
-        
-        // Draw instructions 
-        DrawText("Press F to flip board", 10, 10, 15, DARKGRAY);
         
         EndDrawing();
     }
