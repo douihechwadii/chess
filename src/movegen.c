@@ -8,12 +8,12 @@ void MoveList_Init(MoveList *list)
 
 void MoveList_Add(MoveList *list, int from, int to, int flags, int promotion)
 {
-    if (list->count > MAX_MOVES)
+    if (list->count >= MAX_MOVES)
     {
-        printf("Error: Move list overflow \n");
+        printf("Warning: Move list overflow\n");
         return;
     }
-    
+
     Move *move = &list->moves[list->count++];
     move->from = from;
     move->to = to;
@@ -24,10 +24,9 @@ void MoveList_Add(MoveList *list, int from, int to, int flags, int promotion)
 
 int MoveGen_IsValidSquare(int rank, int file)
 {
-    return rank >= 0 && rank < BOARD_RANKS && file >= 0 && file < BOARD_FILES;
+    return (rank >= 0 && rank < BOARD_RANKS && file >= 0 && file < BOARD_FILES);
 }
 
-// raycasting (calculate all possible moves in one direction for sliding pieces)
 void MoveGen_AddSlidingMoves(const Board *board, MoveList *list, int square, int color, int rankDir, int fileDir)
 {
     int rank = Board_Rank(square);
@@ -59,15 +58,91 @@ void MoveGen_AddSlidingMoves(const Board *board, MoveList *list, int square, int
     }
 }
 
+void MoveGen_GeneratePawnMoves(const Board *board, MoveList *list, int square, int color, int enPassantSquare)
+{
+    int rank = Board_Rank(square);
+    int file = Board_File(square);
+    int direction = (color > 0) ? -1 : 1;
+    int startRank = (color > 0) ? 6 : 1;
+    int promotionRank = (color > 0) ? 0 : 7;
+
+    // Forward move
+    int newRank = rank + direction;
+    if (MoveGen_IsValidSquare(newRank, file))
+    {
+        int targetSquare = Board_Index(newRank, file);
+        int targetPiece = Board_GetPiece(board, targetSquare);
+
+        if (targetPiece == PIECE_NONE)
+        {
+            if (newRank == promotionRank)
+            {
+                // Promotions
+                MoveList_Add(list, square, targetSquare, MOVE_PROMOTION, QUEEN);
+                MoveList_Add(list, square, targetSquare, MOVE_PROMOTION, ROOK);
+                MoveList_Add(list, square, targetSquare, MOVE_PROMOTION, BISHOP);
+                MoveList_Add(list, square, targetSquare, MOVE_PROMOTION, KNIGHT);
+            }
+            else
+            {
+                MoveList_Add(list, square, targetSquare, MOVE_NONE, PIECE_NONE);
+
+                // Double push from starting position
+                if (rank == startRank)
+                {
+                    int doubleRank = rank + 2 * direction;
+                    int doubleSquare = Board_Index(doubleRank, file);
+                    if (Board_GetPiece(board, doubleSquare) == PIECE_NONE)
+                    {
+                        MoveList_Add(list, square, doubleSquare, MOVE_NONE, PIECE_NONE);
+                    }
+                }
+            }
+        }
+    }
+
+    // Captures
+    int captureDirs[2] = {-1, 1};
+    for (int i = 0; i < 2; i++)
+    {
+        int captureFile = file + captureDirs[i];
+        if (MoveGen_IsValidSquare(newRank, captureFile))
+        {
+            int targetSquare = Board_Index(newRank, captureFile);
+            int targetPiece = Board_GetPiece(board, targetSquare);
+
+            if (targetPiece != PIECE_NONE && Board_PieceColor(targetPiece) != color)
+            {
+                if (newRank == promotionRank)
+                {
+                    // Capture promotions
+                    MoveList_Add(list, square, targetSquare, MOVE_CAPTURE | MOVE_PROMOTION, QUEEN);
+                    MoveList_Add(list, square, targetSquare, MOVE_CAPTURE | MOVE_PROMOTION, ROOK);
+                    MoveList_Add(list, square, targetSquare, MOVE_CAPTURE | MOVE_PROMOTION, BISHOP);
+                    MoveList_Add(list, square, targetSquare, MOVE_CAPTURE | MOVE_PROMOTION, KNIGHT);
+                }
+                else
+                {
+                    MoveList_Add(list, square, targetSquare, MOVE_CAPTURE, PIECE_NONE);
+                }
+            }
+
+            // En passant
+            if (enPassantSquare >= 0 && targetSquare == enPassantSquare)
+            {
+                MoveList_Add(list, square, targetSquare, MOVE_EN_PASSANT | MOVE_CAPTURE, PIECE_NONE);
+            }
+        }
+    }
+}
+
 void MoveGen_GenerateKnightMoves(const Board *board, MoveList *list, int square, int color)
 {
     int rank = Board_Rank(square);
     int file = Board_File(square);
-    
+
     int knightMoves[8][2] = {
-        {-2, -1}, {-2, 1}, {-1, -2}, {-1, 2},
-        {1, -2}, {1, 2}, {2, -1}, {2, 1}
-    };
+        {-2, -1}, {-2, 1}, {-1, -2}, {-1, 2}, {1, -2}, {1, 2}, {2, -1}, {2, 1}};
 
     for (int i = 0; i < 8; i++)
     {
@@ -87,11 +162,8 @@ void MoveGen_GenerateKnightMoves(const Board *board, MoveList *list, int square,
             {
                 MoveList_Add(list, square, targetSquare, MOVE_CAPTURE, PIECE_NONE);
             }
-            
         }
-        
     }
-    
 }
 
 void MoveGen_GenerateBishopMoves(const Board *board, MoveList *list, int square, int color)
@@ -122,10 +194,7 @@ void MoveGen_GenerateKingMoves(const Board *board, MoveList *list, int square, i
     int file = Board_File(square);
 
     int kingMoves[8][2] = {
-        {-1, 1}, {-1, 0}, {-1, 1},
-        {0, -1},          {0, 1},
-        {1, -1}, {1, 0}, {1, 1}
-    };
+        {-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
 
     for (int i = 0; i < 8; i++)
     {
@@ -146,14 +215,14 @@ void MoveGen_GenerateKingMoves(const Board *board, MoveList *list, int square, i
                 MoveList_Add(list, square, targetSquare, MOVE_CAPTURE, PIECE_NONE);
             }
         }
-        
     }
 
+    // Castling 
     if (castlingRights > 0)
     {
         int baseRank = (color > 0) ? 7 : 0;
 
-        // king side castling
+        // King side castling
         if ((castlingRights & (color > 0 ? 1 : 4)) && rank == baseRank && file == 4)
         {
             if (Board_GetPiece(board, Board_Index(baseRank, 5)) == PIECE_NONE &&
@@ -174,76 +243,51 @@ void MoveGen_GenerateKingMoves(const Board *board, MoveList *list, int square, i
                 int targetSquare = Board_Index(baseRank, 2);
                 MoveList_Add(list, square, targetSquare, MOVE_CASTLING, PIECE_NONE);
             }
-        }   
+        }
     }
 }
 
-void MoveGen_GeneratePawnMoves(const Board *board, MoveList *list, int square, int color, int enPassantSquare)
+void MoveGen_GeneratePieceMoves(const Board *board, MoveList *list, int square, int color)
 {
-    int rank = Board_Rank(square);
-    int file = Board_File(square);
-    int direction = (color > 0) ? -1 : 1;
-    int startRank = (color > 0) ? 6 : 1;
-    int promotionRank = (color > 0) ? 0 : 7;
+    int piece = Board_GetPiece(board, square);
+    if (piece == PIECE_NONE || Board_PieceColor(piece) != color)
+        return;
 
-    int newRank = rank + direction;
-    if (MoveGen_IsValidSquare(newRank, file))
+    int pieceType = Board_PieceType(piece);
+
+    switch (pieceType)
     {
-        int targetSquare = Board_Index(newRank, file);
-        if (Board_GetPiece(board, targetSquare) == PIECE_NONE)
-        {
-            if (newRank == promotionRank)
-            {
-                MoveList_Add(list, square, targetSquare, MOVE_PROMOTION, QUEEN);
-            }
-            else
-            {
-                MoveList_Add(list, square, targetSquare, MOVE_NONE, PIECE_NONE);
-
-                if (rank == startRank)
-                {
-                    int doubleRank = rank + 2 * direction;
-                    int doubleSquare = Board_Index(doubleRank, file);
-                    if (Board_GetPiece(board, doubleSquare) == PIECE_NONE)
-                    {
-                        MoveList_Add(list, square, doubleSquare, PIECE_NONE, MOVE_NONE);
-                    }
-                    
-                }
-                
-            }
-        }
-        
+    case PAWN:
+        MoveGen_GeneratePawnMoves(board, list, square, color, -1);
+        break;
+    case KNIGHT:
+        MoveGen_GenerateKnightMoves(board, list, square, color);
+        break;
+    case BISHOP:
+        MoveGen_GenerateBishopMoves(board, list, square, color);
+        break;
+    case ROOK:
+        MoveGen_GenerateRookMoves(board, list, square, color);
+        break;
+    case QUEEN:
+        MoveGen_GenerateQueenMoves(board, list, square, color);
+        break;
+    case KING:
+        MoveGen_GenerateKingMoves(board, list, square, color, 0);
+        break;
     }
+}
 
-    int captureDirs[2] = {-1, 1};
-    for (int i = 0; i < 2; i++)
+void MoveGen_GenerateAllMoves(const Board *board, MoveList *list, int color)
+{
+    MoveList_Init(list);
+
+    for (int square = 0; square < BOARD_SIZE; square++)
     {
-        int captureFile = file + captureDirs[i];
-        if (MoveGen_IsValidSquare(newRank, captureFile))
+        int piece = Board_GetPiece(board, square);
+        if (piece != PIECE_NONE && Board_PieceColor(piece) == color)
         {
-            int targetSquare = Board_Index(newRank, captureFile);
-            int targetPiece = Board_GetPiece(board, targetSquare);
-
-            if (targetPiece != PIECE_NONE && Board_PieceColor(targetPiece) != color)
-            {
-                if (newRank == promotionRank)
-                {
-                    /* Capture promotions */
-                    MoveList_Add(list, square, targetSquare, MOVE_CAPTURE | MOVE_PROMOTION, QUEEN);
-                }
-                else
-                {
-                    MoveList_Add(list, square, targetSquare, MOVE_CAPTURE, PIECE_NONE);
-                }
-            }
-
-            /* En passant */
-            if (enPassantSquare >= 0 && targetSquare == enPassantSquare)
-            {
-                MoveList_Add(list, square, targetSquare, MOVE_EN_PASSANT | MOVE_CAPTURE, PIECE_NONE);
-            }
+            MoveGen_GeneratePieceMoves(board, list, square, color);
         }
     }
-    
 }
