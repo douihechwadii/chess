@@ -7,15 +7,15 @@
 
 int main(void)
 {
-    /* Initialize window */
+    // Initialize window 
     InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Chess Game");
     SetTargetFPS(60);
     
-    /* Initialize game state */
+    // Initialize game state 
     GameState state;
     GameState_Init(&state);
     
-    /* Initialize UI */
+    // Initialize UI 
     UIState ui;
     UI_Init(&ui);
     UI_Update(&ui, &state);
@@ -27,10 +27,10 @@ int main(void)
     printf("  - Press F to flip the board\n");
     printf("  - Close window to exit\n\n");
     
-    /* Main game loop */
+    // Main game loop 
     while (!WindowShouldClose())
     {
-        /* Handle input */
+        // Handle input 
         bool moveMade = UI_HandleInput(&ui, &state);
         
         if (moveMade)
@@ -58,7 +58,7 @@ int main(void)
             }
         }
         
-        /* Draw everything */
+        // Draw everything 
         BeginDrawing();
         ClearBackground(RAYWHITE);
         
@@ -68,13 +68,13 @@ int main(void)
         UI_DrawCoordinates(&ui, ui.flipBoard);
         UI_DrawGameInfo(&ui, &state);
         
-        /* Draw instructions */
+        // Draw instructions 
         DrawText("Press F to flip board", 10, 10, 15, DARKGRAY);
         
         EndDrawing();
     }
     
-    /* Cleanup */
+    // Cleanup 
     UI_Cleanup(&ui);
     CloseWindow();
     

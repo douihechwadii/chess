@@ -209,26 +209,14 @@ int GameState_IsMoveLegal(GameState *state, const Move *move)
 void GameState_GenerateLegalMoves(GameState *state, MoveList *list)
 {
     MoveList pseudoLegal;
-    MoveGen_GenerateAllMoves(&state->board, &pseudoLegal, state->sideToMove);
+    // FIXED: Pass enPassantSquare and castlingRights to MoveGen_GenerateAllMoves
+    MoveGen_GenerateAllMoves(&state->board, &pseudoLegal, state->sideToMove, state->enPassantSquare, state->castlingRights);
     
     MoveList_Init(list);
     
     for (int i = 0; i < pseudoLegal.count; i++)
     {
         Move *move = &pseudoLegal.moves[i];
-        
-        // Update en passant info for pawn moves 
-        if (Board_PieceType(Board_GetPiece(&state->board, move->from)) == PAWN)
-        {
-            move->flags &= ~MOVE_EN_PASSANT;
-            
-            // Check for en passant capture 
-            if (move->to == state->enPassantSquare && 
-                abs(Board_File(move->from) - Board_File(move->to)) == 1)
-            {
-                move->flags |= MOVE_EN_PASSANT | MOVE_CAPTURE;
-            }
-        }
         
         // Check castling validity 
         if (move->flags & MOVE_CASTLING)

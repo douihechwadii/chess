@@ -247,7 +247,8 @@ void MoveGen_GenerateKingMoves(const Board *board, MoveList *list, int square, i
     }
 }
 
-void MoveGen_GeneratePieceMoves(const Board *board, MoveList *list, int square, int color)
+// MODIFIED: Now accepts en passant and castling parameters
+void MoveGen_GeneratePieceMoves(const Board *board, MoveList *list, int square, int color, int enPassantSquare, int castlingRights)
 {
     int piece = Board_GetPiece(board, square);
     if (piece == PIECE_NONE || Board_PieceColor(piece) != color)
@@ -258,7 +259,7 @@ void MoveGen_GeneratePieceMoves(const Board *board, MoveList *list, int square, 
     switch (pieceType)
     {
     case PAWN:
-        MoveGen_GeneratePawnMoves(board, list, square, color, -1);
+        MoveGen_GeneratePawnMoves(board, list, square, color, enPassantSquare);
         break;
     case KNIGHT:
         MoveGen_GenerateKnightMoves(board, list, square, color);
@@ -273,12 +274,13 @@ void MoveGen_GeneratePieceMoves(const Board *board, MoveList *list, int square, 
         MoveGen_GenerateQueenMoves(board, list, square, color);
         break;
     case KING:
-        MoveGen_GenerateKingMoves(board, list, square, color, 0);
+        MoveGen_GenerateKingMoves(board, list, square, color, castlingRights);
         break;
     }
 }
 
-void MoveGen_GenerateAllMoves(const Board *board, MoveList *list, int color)
+// MODIFIED: Now accepts en passant and castling parameters
+void MoveGen_GenerateAllMoves(const Board *board, MoveList *list, int color, int enPassantSquare, int castlingRights)
 {
     MoveList_Init(list);
 
@@ -287,7 +289,7 @@ void MoveGen_GenerateAllMoves(const Board *board, MoveList *list, int color)
         int piece = Board_GetPiece(board, square);
         if (piece != PIECE_NONE && Board_PieceColor(piece) == color)
         {
-            MoveGen_GeneratePieceMoves(board, list, square, color);
+            MoveGen_GeneratePieceMoves(board, list, square, color, enPassantSquare, castlingRights);
         }
     }
 }
