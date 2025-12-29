@@ -26,7 +26,7 @@ void Board_Clear(Board *board);
 void InitFromFEN(Board *board, const char *fen);
 
 int Board_GetPiece(const Board *board, int index);
-int Board_SetPiece(Board *board, int index, int value);
+void Board_SetPiece(Board *board, int index, int value);
 
 int Board_Index(int rank, int file);
 int Board_Rank(int index);
