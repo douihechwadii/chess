@@ -177,3 +177,73 @@ void MoveGen_GenerateKingMoves(const Board *board, MoveList *list, int square, i
         }   
     }
 }
+
+void MoveGen_GeneratePawnMoves(const Board *board, MoveList *list, int square, int color, int enPassantSquare)
+{
+    int rank = Board_Rank(square);
+    int file = Board_File(square);
+    int direction = (color > 0) ? -1 : 1;
+    int startRank = (color > 0) ? 6 : 1;
+    int promotionRank = (color > 0) ? 0 : 7;
+
+    int newRank = rank + direction;
+    if (MoveGen_IsValidSquare(newRank, file))
+    {
+        int targetSquare = Board_Index(newRank, file);
+        if (Board_GetPiece(board, targetSquare) == PIECE_NONE)
+        {
+            if (newRank == promotionRank)
+            {
+                MoveList_Add(list, square, targetSquare, MOVE_PROMOTION, QUEEN);
+            }
+            else
+            {
+                MoveList_Add(list, square, targetSquare, MOVE_NONE, PIECE_NONE);
+
+                if (rank == startRank)
+                {
+                    int doubleRank = rank + 2 * direction;
+                    int doubleSquare = Board_Index(doubleRank, file);
+                    if (Board_GetPiece(board, doubleSquare) == PIECE_NONE)
+                    {
+                        MoveList_Add(list, square, doubleSquare, PIECE_NONE, MOVE_NONE);
+                    }
+                    
+                }
+                
+            }
+        }
+        
+    }
+
+    int captureDirs[2] = {-1, 1};
+    for (int i = 0; i < 2; i++)
+    {
+        int captureFile = file + captureDirs[i];
+        if (MoveGen_IsValidSquare(newRank, captureFile))
+        {
+            int targetSquare = Board_Index(newRank, captureFile);
+            int targetPiece = Board_GetPiece(board, targetSquare);
+
+            if (targetPiece != PIECE_NONE && Board_PieceColor(targetPiece) != color)
+            {
+                if (newRank == promotionRank)
+                {
+                    /* Capture promotions */
+                    MoveList_Add(list, square, targetSquare, MOVE_CAPTURE | MOVE_PROMOTION, QUEEN);
+                }
+                else
+                {
+                    MoveList_Add(list, square, targetSquare, MOVE_CAPTURE, PIECE_NONE);
+                }
+            }
+
+            /* En passant */
+            if (enPassantSquare >= 0 && targetSquare == enPassantSquare)
+            {
+                MoveList_Add(list, square, targetSquare, MOVE_EN_PASSANT | MOVE_CAPTURE, PIECE_NONE);
+            }
+        }
+    }
+    
+}

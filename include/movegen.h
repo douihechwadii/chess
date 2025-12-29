@@ -27,5 +27,7 @@ void MoveGen_GenerateBishopMoves(const Board *board, MoveList *list, int square,
 void MoveGen_GenerateRookMoves(const Board *board, MoveList *list, int square, int color);
 void MoveGen_GenerateQueenMoves(const Board *board, MoveList *list, int square, int color);
 void MoveGen_GenerateKingMoves(const Board *board, MoveList *list, int square, int color, int castlingRights);
+void MoveGen_GeneratePawnMoves(const Board *board, MoveList *list, int square, int color, int enPassantSquare);
+
 
 #endif
