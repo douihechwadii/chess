@@ -115,3 +115,65 @@ void MoveGen_GenerateQueenMoves(const Board *board, MoveList *list, int square, 
     MoveGen_GenerateBishopMoves(board, list, square, color);
     MoveGen_GenerateRookMoves(board, list, square, color);
 }
+
+void MoveGen_GenerateKingMoves(const Board *board, MoveList *list, int square, int color, int castlingRights)
+{
+    int rank = Board_Rank(square);
+    int file = Board_File(square);
+
+    int kingMoves[8][2] = {
+        {-1, 1}, {-1, 0}, {-1, 1},
+        {0, -1},          {0, 1},
+        {1, -1}, {1, 0}, {1, 1}
+    };
+
+    for (int i = 0; i < 8; i++)
+    {
+        int newRank = rank + kingMoves[i][0];
+        int newFile = file + kingMoves[i][1];
+
+        if (MoveGen_IsValidSquare(newRank, newFile))
+        {
+            int targetSquare = Board_Index(newRank, newFile);
+            int targetPiece = Board_GetPiece(board, targetSquare);
+
+            if (targetPiece == PIECE_NONE)
+            {
+                MoveList_Add(list, square, targetSquare, MOVE_NONE, PIECE_NONE);
+            }
+            else if (Board_PieceColor(targetPiece) != color)
+            {
+                MoveList_Add(list, square, targetSquare, MOVE_CAPTURE, PIECE_NONE);
+            }
+        }
+        
+    }
+
+    if (castlingRights > 0)
+    {
+        int baseRank = (color > 0) ? 7 : 0;
+
+        // king side castling
+        if ((castlingRights & (color > 0 ? 1 : 4)) && rank == baseRank && file == 4)
+        {
+            if (Board_GetPiece(board, Board_Index(baseRank, 5)) == PIECE_NONE &&
+                Board_GetPiece(board, Board_Index(baseRank, 6)) == PIECE_NONE)
+            {
+                int targetSquare = Board_Index(baseRank, 6);
+                MoveList_Add(list, square, targetSquare, MOVE_CASTLING, PIECE_NONE);
+            }
+        }
+
+        // Queen side castling
+        if ((castlingRights & (color > 0 ? 2 : 8)) && rank == baseRank && file == 4)
+        {
+            if (Board_GetPiece(board, Board_Index(baseRank, 3)) == PIECE_NONE &&
+                Board_GetPiece(board, Board_Index(baseRank, 2)) == PIECE_NONE &&
+                Board_GetPiece(board, Board_Index(baseRank, 1)) == PIECE_NONE)
+            {
+                int targetSquare = Board_Index(baseRank, 2);
+                MoveList_Add(list, square, targetSquare, MOVE_CASTLING, PIECE_NONE);
+            }
+        }   
+    }
+}
