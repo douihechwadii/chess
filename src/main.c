@@ -14,8 +14,7 @@ typedef enum {
 
 typedef enum {
     MODE_HUMAN_VS_HUMAN,
-    MODE_HUMAN_VS_AI,
-    MODE_AI_VS_AI
+    MODE_HUMAN_VS_AI
 } GameMode;
 
 typedef struct {
@@ -59,7 +58,6 @@ int main(void)
     
     GameScreen currentScreen = SCREEN_MENU;
     GameMode gameMode = MODE_HUMAN_VS_AI;
-    AIDifficulty aiDifficulty = AI_MEDIUM;
     int humanColor = 1;  // 1 = white, -1 = black
     
     // Initialize game state 
@@ -77,63 +75,43 @@ int main(void)
     float centerX = (WINDOW_WIDTH - btnWidth) / 2;
     
     Button btnHumanVsHuman = {
-        {centerX, 150, btnWidth, btnHeight},
+        {centerX, 200, btnWidth, btnHeight},
         "Human vs Human", LIGHTGRAY, GRAY
     };
     
     Button btnHumanVsAI = {
-        {centerX, 220, btnWidth, btnHeight},
-        "Human vs AI", LIGHTGRAY, GRAY
+        {centerX, 270, btnWidth, btnHeight},
+        "Human vs AI", SKYBLUE, BLUE
     };
     
-    Button btnAIVsAI = {
-        {centerX, 290, btnWidth, btnHeight},
-        "AI vs AI", LIGHTGRAY, GRAY
-    };
-    
-    Button btnDifficultyEasy = {
-        {centerX - 160, 380, 100, 40},
-        "Easy", LIGHTGRAY, GRAY
-    };
-    
-    Button btnDifficultyMedium = {
-        {centerX - 50, 380, 100, 40},
-        "Medium", SKYBLUE, BLUE
-    };
-    
-    Button btnDifficultyHard = {
-        {centerX + 60, 380, 100, 40},
-        "Hard", LIGHTGRAY, GRAY
-    };
-    
-    Button btnDifficultyExpert = {
-        {centerX + 170, 380, 100, 40},
-        "Expert", LIGHTGRAY, GRAY
-    };
+    float colorBtnWidth = 150;
+    float colorBtnHeight = 40;
+    float colorBtnSpacing = 20;
+    float colorBtnStartX = (WINDOW_WIDTH - (colorBtnWidth * 2 + colorBtnSpacing)) / 2;
     
     Button btnPlayAsWhite = {
-        {centerX - 80, 450, 150, 40},
-        "Play as White", LIGHTGRAY, GRAY
+        {colorBtnStartX, 360, colorBtnWidth, colorBtnHeight},
+        "Play as White", SKYBLUE, BLUE
     };
     
     Button btnPlayAsBlack = {
-        {centerX + 80, 450, 150, 40},
+        {colorBtnStartX + colorBtnWidth + colorBtnSpacing, 360, colorBtnWidth, colorBtnHeight},
         "Play as Black", LIGHTGRAY, GRAY
     };
     
     Button btnStart = {
-        {centerX, 520, btnWidth, btnHeight},
+        {centerX, 430, btnWidth, btnHeight},
         "START GAME", GREEN, DARKGREEN
+    };
+    
+    Button btnQuit = {
+        {centerX, 500, btnWidth, btnHeight},
+        "QUIT", RED, MAROON
     };
     
     Button btnNewGame = {
         {centerX, 520, btnWidth, btnHeight},
         "NEW GAME", GREEN, DARKGREEN
-    };
-    
-    Button btnQuit = {
-        {centerX, 590, btnWidth, btnHeight},
-        "QUIT", RED, MAROON
     };
     
     printf("Chess Game Started!\n");
@@ -152,65 +130,26 @@ int main(void)
                 gameMode = MODE_HUMAN_VS_HUMAN;
                 btnHumanVsHuman.color = SKYBLUE;
                 btnHumanVsAI.color = LIGHTGRAY;
-                btnAIVsAI.color = LIGHTGRAY;
             }
             
             if (IsButtonPressed(&btnHumanVsAI, mousePos, mousePressed)) {
                 gameMode = MODE_HUMAN_VS_AI;
                 btnHumanVsHuman.color = LIGHTGRAY;
                 btnHumanVsAI.color = SKYBLUE;
-                btnAIVsAI.color = LIGHTGRAY;
             }
             
-            if (IsButtonPressed(&btnAIVsAI, mousePos, mousePressed)) {
-                gameMode = MODE_AI_VS_AI;
-                btnHumanVsHuman.color = LIGHTGRAY;
-                btnHumanVsAI.color = LIGHTGRAY;
-                btnAIVsAI.color = SKYBLUE;
-            }
-            
-            if (IsButtonPressed(&btnDifficultyEasy, mousePos, mousePressed)) {
-                aiDifficulty = AI_EASY;
-                btnDifficultyEasy.color = SKYBLUE;
-                btnDifficultyMedium.color = LIGHTGRAY;
-                btnDifficultyHard.color = LIGHTGRAY;
-                btnDifficultyExpert.color = LIGHTGRAY;
-            }
-            
-            if (IsButtonPressed(&btnDifficultyMedium, mousePos, mousePressed)) {
-                aiDifficulty = AI_MEDIUM;
-                btnDifficultyEasy.color = LIGHTGRAY;
-                btnDifficultyMedium.color = SKYBLUE;
-                btnDifficultyHard.color = LIGHTGRAY;
-                btnDifficultyExpert.color = LIGHTGRAY;
-            }
-            
-            if (IsButtonPressed(&btnDifficultyHard, mousePos, mousePressed)) {
-                aiDifficulty = AI_HARD;
-                btnDifficultyEasy.color = LIGHTGRAY;
-                btnDifficultyMedium.color = LIGHTGRAY;
-                btnDifficultyHard.color = SKYBLUE;
-                btnDifficultyExpert.color = LIGHTGRAY;
-            }
-            
-            if (IsButtonPressed(&btnDifficultyExpert, mousePos, mousePressed)) {
-                aiDifficulty = AI_EXPERT;
-                btnDifficultyEasy.color = LIGHTGRAY;
-                btnDifficultyMedium.color = LIGHTGRAY;
-                btnDifficultyHard.color = LIGHTGRAY;
-                btnDifficultyExpert.color = SKYBLUE;
-            }
-            
-            if (IsButtonPressed(&btnPlayAsWhite, mousePos, mousePressed)) {
-                humanColor = 1;
-                btnPlayAsWhite.color = SKYBLUE;
-                btnPlayAsBlack.color = LIGHTGRAY;
-            }
-            
-            if (IsButtonPressed(&btnPlayAsBlack, mousePos, mousePressed)) {
-                humanColor = -1;
-                btnPlayAsWhite.color = LIGHTGRAY;
-                btnPlayAsBlack.color = SKYBLUE;
+            if (gameMode == MODE_HUMAN_VS_AI) {
+                if (IsButtonPressed(&btnPlayAsWhite, mousePos, mousePressed)) {
+                    humanColor = 1;
+                    btnPlayAsWhite.color = SKYBLUE;
+                    btnPlayAsBlack.color = LIGHTGRAY;
+                }
+                
+                if (IsButtonPressed(&btnPlayAsBlack, mousePos, mousePressed)) {
+                    humanColor = -1;
+                    btnPlayAsWhite.color = LIGHTGRAY;
+                    btnPlayAsBlack.color = SKYBLUE;
+                }
             }
             
             if (IsButtonPressed(&btnStart, mousePos, mousePressed)) {
@@ -218,7 +157,7 @@ int main(void)
                 GameState_Init(&state);
                 UI_Init(&ui);
                 UI_Update(&ui, &state);
-                AI_Init(&ai, aiDifficulty);
+                AI_Init(&ai, AI_MEDIUM);  // Always use medium difficulty
                 
                 aiThinking = false;
                 
@@ -227,16 +166,10 @@ int main(void)
                 printf("\n=== NEW GAME ===\n");
                 if (gameMode == MODE_HUMAN_VS_HUMAN) {
                     printf("Mode: Human vs Human\n");
-                } else if (gameMode == MODE_HUMAN_VS_AI) {
-                    printf("Mode: Human vs AI\n");
-                    printf("You are: %s\n", humanColor > 0 ? "White" : "Black");
                 } else {
-                    printf("Mode: AI vs AI\n");
+                    printf("Mode: Human vs AI (Medium)\n");
+                    printf("You are: %s\n", humanColor > 0 ? "White" : "Black");
                 }
-                printf("AI Difficulty: %s\n", 
-                       aiDifficulty == AI_EASY ? "Easy" :
-                       aiDifficulty == AI_MEDIUM ? "Medium" :
-                       aiDifficulty == AI_HARD ? "Hard" : "Expert");
                 printf("================\n\n");
             }
             
@@ -248,23 +181,14 @@ int main(void)
             BeginDrawing();
             ClearBackground(RAYWHITE);
             
-            DrawText("CHESS GAME", centerX + 40, 50, 40, BLACK);
+            DrawText("CHESS GAME", centerX + 40, 100, 40, BLACK);
             
-            DrawText("Select Game Mode:", centerX + 60, 120, 20, DARKGRAY);
+            DrawText("Select Game Mode:", centerX + 60, 170, 20, DARKGRAY);
             DrawButton(&btnHumanVsHuman, mousePos);
             DrawButton(&btnHumanVsAI, mousePos);
-            DrawButton(&btnAIVsAI, mousePos);
-            
-            if (gameMode != MODE_HUMAN_VS_HUMAN) {
-                DrawText("AI Difficulty:", centerX + 80, 350, 20, DARKGRAY);
-                DrawButton(&btnDifficultyEasy, mousePos);
-                DrawButton(&btnDifficultyMedium, mousePos);
-                DrawButton(&btnDifficultyHard, mousePos);
-                DrawButton(&btnDifficultyExpert, mousePos);
-            }
             
             if (gameMode == MODE_HUMAN_VS_AI) {
-                DrawText("Play as:", centerX + 110, 425, 20, DARKGRAY);
+                DrawText("Play as:", (WINDOW_WIDTH - MeasureText("Play as:", 20)) / 2, 335, 20, DARKGRAY);
                 DrawButton(&btnPlayAsWhite, mousePos);
                 DrawButton(&btnPlayAsBlack, mousePos);
             }
@@ -279,8 +203,8 @@ int main(void)
         else if (currentScreen == SCREEN_GAME)
         {
             // Handle AI move
-            if ((gameMode == MODE_AI_VS_AI || 
-                (gameMode == MODE_HUMAN_VS_AI && state.sideToMove != humanColor)) &&
+            if (gameMode == MODE_HUMAN_VS_AI && 
+                state.sideToMove != humanColor &&
                 state.result == GAME_ONGOING &&
                 !aiThinking)
             {
