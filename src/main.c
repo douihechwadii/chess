@@ -110,7 +110,7 @@ int main(void)
     };
     
     Button btnNewGame = {
-        {centerX, 520, btnWidth, btnHeight},
+        {centerX, 570, btnWidth, btnHeight},
         "NEW GAME", GREEN, DARKGREEN
     };
     
